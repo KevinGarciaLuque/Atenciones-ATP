@@ -89,7 +89,21 @@ const RegistrarAtencion = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Especialidad</Form.Label>
-                  <Form.Control type="text" name="especialidad" value={form.especialidad} onChange={handleChange} required />
+                  <Form.Select name="especialidad" value={form.especialidad} onChange={handleChange} required>
+                    <option value="">Selecciona una especialidad</option>
+                    <option value="Cardiología">Cardiología</option>
+                    <option value="Cardiología intervencionista">Cardiología intervencionista</option>
+                    <option value="Cirugía cardiovascular">Cirugía cardiovascular</option>
+                    <option value="Cirugía pediátrica">Cirugía pediátrica</option>
+                    <option value="Cirugía plástica reconstructiva">Cirugía plástica reconstructiva</option>
+                    <option value="Dermatología">Dermatología</option>
+                    <option value="Endocrinología">Endocrinología</option>
+                    <option value="Gastroenterología">Gastroenterología</option>
+                    <option value="Inmunología y alergias">Inmunología y alergias</option>
+                    <option value="Nefrología">Nefrología</option>
+                    <option value="Neurología">Neurología</option>
+                    <option value="Otorrinolaringología">Otorrinolaringología</option>
+                  </Form.Select>
                 </Form.Group>
 
                 <Form.Group className="mb-3">

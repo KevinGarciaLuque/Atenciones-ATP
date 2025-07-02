@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.js';
 import atencionesRoutes from './routes/atenciones.js';
 import bitacoraRoutes from './routes/bitacora.js';
 import usuariosRoutes from './routes/usuarios.js';
+import usuariosDashboardRoutes from './routes/usuariosDashboard.js';
 
 
 const app = express();
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/atenciones', atencionesRoutes);
 app.use('/api/bitacora', bitacoraRoutes);
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/usuarios/dashboard', usuariosDashboardRoutes);
 
 
 
