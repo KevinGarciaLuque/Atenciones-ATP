@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { Container, Table, Spinner, Alert, Form, Button, Row, Col, Modal } from 'react-bootstrap';
+import {
+  Container,
+  Table,
+  Spinner,
+  Alert,
+  Form,
+  Button,
+  Row,
+  Col,
+  Modal,
+} from 'react-bootstrap';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { FaBroom } from 'react-icons/fa';
 
 const ListaAtenciones = () => {
   const { token } = useAuth();
@@ -28,9 +39,14 @@ const ListaAtenciones = () => {
   const formatearFechaHora = (fechaString) => {
     if (!fechaString) return '';
     const fecha = new Date(fechaString);
-    const opcionesFecha = { day: '2-digit', month: '2-digit', year: 'numeric' };
-    const opcionesHora = { hour: '2-digit', minute: '2-digit', hour12: true };
-    return `${fecha.toLocaleDateString('es-ES', opcionesFecha)} ${fecha.toLocaleTimeString('es-ES', opcionesHora)}`;
+    return fecha.toLocaleString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
   };
 
   const obtenerAtenciones = async () => {
@@ -79,138 +95,137 @@ const ListaAtenciones = () => {
   };
 
   const atencionesFiltradas = atenciones.filter(a =>
-    a.nombre_paciente.toLowerCase().includes(busqueda.toLowerCase())
+    a.nombre_paciente?.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   return (
-    <Container className="mt-4">
-      <h2 className="text-center fw-bold mb-4" style={{ color: '#26474E' }}>Lista de Atenciones</h2>
+    <Container fluid className="mt-3 px-3">
+      <div className="bg-white rounded shadow-sm p-3 p-md-4">
+        <h5 className="text-center fw-bold mb-3" style={{ color: '#26474E' }}>
+          Lista de Atenciones
+        </h5>
 
-      {mensajeError && <Alert variant="danger" className="text-center">{mensajeError}</Alert>}
+        {mensajeError && (
+          <Alert variant="danger" className="text-center">{mensajeError}</Alert>
+        )}
 
-      <Row className="mb-3">
-        <Col md={3}>
-          <Form.Label>Desde:</Form.Label>
-          <Form.Control type="date" value={desde} onChange={e => setDesde(e.target.value)} />
-        </Col>
-        <Col md={3}>
-          <Form.Label>Hasta:</Form.Label>
-          <Form.Control type="date" value={hasta} onChange={e => setHasta(e.target.value)} />
-        </Col>
-        <Col md={3}>
-          <Form.Label>Buscar por nombre:</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Nombre del paciente"
-            value={busqueda}
-            onChange={e => setBusqueda(e.target.value)}
-          />
-        </Col>
-        <Col md={3} className="d-flex align-items-end flex-wrap gap-2">
-  <Button variant="primary" className="flex-fill" onClick={obtenerAtenciones}>
-    Filtrar
-  </Button>
-  <Button
-    className="flex-fill text-white"
-    style={{
-      backgroundColor: '#4CAF50', // verde profesional
-      border: 'none',
-      transition: 'background 0.3s'
-    }}
-    onMouseOver={e => e.currentTarget.style.backgroundColor = '#45A049'} // verde más oscuro en hover
-    onMouseOut={e => e.currentTarget.style.backgroundColor = '#4CAF50'}
-    onClick={generarExcel}
-  >
-    Generar Excel
-  </Button>
-</Col>
+        {/* Filtro */}
+        <Form className="mb-3">
+          <Row className="g-2">
+            <Col xs={12} md={4}>
+              <Form.Control
+                type="text"
+                placeholder="Buscar por nombre del paciente..."
+                value={busqueda}
+                onChange={e => setBusqueda(e.target.value)}
+              />
+            </Col>
+            <Col xs={6} md={3}>
+              <Form.Control
+                type="date"
+                value={desde}
+                onChange={e => setDesde(e.target.value)}
+              />
+            </Col>
+            <Col xs={6} md={3}>
+              <Form.Control
+                type="date"
+                value={hasta}
+                onChange={e => setHasta(e.target.value)}
+              />
+            </Col>
+            <Col xs={12} md={2} className="d-grid gap-2">
+              <Button variant="primary" onClick={obtenerAtenciones}>
+                Filtrar
+              </Button>
+              <Button
+                style={{ backgroundColor: '#ffc107', border: 'none' }}
+                className="text-dark"
+                onClick={() => {
+                  setDesde('');
+                  setHasta('');
+                  setBusqueda('');
+                  obtenerAtenciones();
+                }}
+              >
+                <FaBroom /> Limpiar
+              </Button>
+              <Button
+                style={{ backgroundColor: '#4CAF50', border: 'none' }}
+                className="text-white"
+                onClick={generarExcel}
+              >
+                Generar Excel
+              </Button>
+            </Col>
+          </Row>
+        </Form>
 
-      </Row>
-
-      {cargando ? (
-        <div className="d-flex justify-content-center align-items-center" style={{ height: '50vh' }}>
-          <Spinner animation="border" style={{ color: '#26474E' }} />
-        </div>
-      ) : (
-        <div className="table-responsive">
-          <Table bordered hover striped className="shadow-sm">
-            <thead style={{ backgroundColor: '#26474E', color: 'white' }}>
-              <tr>
-                <th>Fecha</th>
-                <th>Nombre Paciente</th>
-                <th>Identidad</th>
-                <th>Edad</th>
-                <th>Especialidad</th>
-                <th>Procedencia</th>
-                <th>Motivo</th>
-                <th>Oficial Responsable</th>
-                <th>Observaciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {atencionesFiltradas.map(a => (
-                <tr key={a.id}>
-                  <td>{formatearFechaHora(a.fecha_solicitud)}</td>
-                  <td>{a.nombre_paciente}</td>
-                  <td>{a.identidad_paciente}</td>
-                  <td>{a.edad_paciente}</td>
-                  <td>{a.especialidad}</td>
-                  <td>{a.procedencia}</td>
-                  <td
-                    style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                    onClick={() => abrirModal('Motivo de la Atención', a.motivo_solicitud)}
-                  >
-                    {a.motivo_solicitud}
-                  </td>
-                  <td>{a.oficial}</td>
-                  <td
-                    style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                    onClick={() => abrirModal('Observaciones', a.observaciones)}
-                  >
-                    {a.observaciones}
-                  </td>
+        {/* Tabla */}
+        {cargando ? (
+          <div className="d-flex justify-content-center my-4">
+            <Spinner animation="border" style={{ color: '#26474E' }} />
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <Table bordered hover size="sm" className="mb-0 align-middle">
+              <thead style={{ backgroundColor: '#26474E', color: 'white' }}>
+                <tr className="text-center">
+                  <th>Fecha</th>
+                  <th>Paciente</th>
+                  <th>Identidad</th>
+                  <th>Edad</th>
+                  <th>Especialidad</th>
+                  <th>Procedencia</th>
+                  <th>Motivo</th>
+                  <th>Observaciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {atencionesFiltradas.map(a => (
+                  <tr key={a.id}>
+                    <td>{formatearFechaHora(a.fecha_solicitud)}</td>
+                    <td>{a.nombre_paciente}</td>
+                    <td>{a.identidad_paciente}</td>
+                    <td>{a.edad_paciente}</td>
+                    <td>{a.especialidad}</td>
+                    <td>{a.procedencia}</td>
+                    <td
+                      style={{ maxWidth: '150px', cursor: 'pointer' }}
+                      className="text-truncate"
+                      onClick={() => abrirModal('Motivo de la Atención', a.motivo_solicitud)}
+                    >
+                      {a.motivo_solicitud}
+                    </td>
+                    <td
+                      style={{ maxWidth: '150px', cursor: 'pointer' }}
+                      className="text-truncate"
+                      onClick={() => abrirModal('Observaciones', a.observaciones)}
+                    >
+                      {a.observaciones}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        )}
 
-      <Modal
-        show={modalShow}
-        onHide={() => setModalShow(false)}
-        centered
-        size="lg"
-      >
-        <Modal.Header closeButton style={{ backgroundColor: '#26474E', color: 'white' }}>
-          <Modal.Title>{modalTitulo}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body
-          style={{
-            maxHeight: '60vh',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            wordWrap: 'break-word',
-            fontSize: '1rem',
-            textAlign: 'justify',
-            padding: '20px',
-            lineHeight: '1.6'
-          }}
-        >
-          {modalContenido || 'Sin información disponible.'}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setModalShow(false)}
-            style={{ backgroundColor: '#4D7B82', border: 'none' }}
-            onMouseOver={e => { e.target.style.backgroundColor = '#77A9B1'; }}
-            onMouseOut={e => { e.target.style.backgroundColor = '#4D7B82'; }}
-          >
-            Cerrar
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        {/* Modal */}
+        <Modal show={modalShow} onHide={() => setModalShow(false)} centered>
+          <Modal.Header closeButton style={{ backgroundColor: '#26474E', color: 'white' }}>
+            <Modal.Title>{modalTitulo}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body style={{ whiteSpace: 'pre-wrap' }}>
+            {modalContenido || 'Sin información disponible.'}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setModalShow(false)}>
+              Cerrar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
     </Container>
   );
 };

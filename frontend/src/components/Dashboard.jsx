@@ -99,7 +99,7 @@ const Dashboard = ({ sidebarExpanded = true }) => {
       fluid
       className="mt-4"
       style={{
-        paddingLeft: sidebarExpanded ? '240px' : '0px',
+        paddingLeft: sidebarExpanded ? '0px' : '0px',
         transition: 'padding-left 0.3s ease',
         maxWidth: '100%',
       }}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import RegistrarAtencion from './components/RegistrarAtencion';
@@ -11,9 +11,17 @@ import { useAuth } from './context/AuthContext';
 
 function App() {
   const { usuario } = useAuth();
-
-  // Estado global para expandir/colapsar Sidebar
   const [sidebarExpanded, setSidebarExpanded] = useState(window.innerWidth > 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div style={{ display: 'flex' }}>
@@ -27,7 +35,7 @@ function App() {
           backgroundColor: '#E1EDF2',
           minHeight: '100vh',
           transition: 'margin-left 0.3s ease',
-          marginLeft: usuario ? (sidebarExpanded ? '220px' : '0') : '0'
+          marginLeft: usuario && sidebarExpanded && !isMobile ? '220px' : '0'
         }}
       >
         <Routes>
